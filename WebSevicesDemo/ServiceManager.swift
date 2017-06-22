@@ -26,27 +26,27 @@ class ServiceManager {
     
 
     
-    func searchPhotos(searchText: String, completionHandler:(NSArray) -> Void) {
+    func searchPhotos(_ searchText: String, completionHandler:@escaping (NSArray) -> Void) {
 
         let urlString: String = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(API_KEY)&tags=\(searchText)&per_page=25&format=json&nojsoncallback=1"
         
-        let url = NSURL(string: urlString)
+        let url = Foundation.URL(string: urlString)
         
         if let url = url {
             
-            let request = NSURLRequest(URL: url)
+            let request = URLRequest(url: url)
             
-            let task = NSURLSession.sharedSession().dataTaskWithRequest(request, completionHandler: { (data, response, error) -> Void in
+            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
                 
                 if error == nil {
                     if let data = data {
                         
                         do {
                             
-                            let result = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.AllowFragments)
+                            let result = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.allowFragments) as? [String:Any]
                             
-                            if let photoData = result["photos"] {
-                                if let photos = photoData!["photo"] {
+                            if let photoData = result?["photos"] as? [String:Any] {
+                                if let photos = photoData["photo"] {
                                     completionHandler((photos as? NSArray)!)
                                 }
                             }

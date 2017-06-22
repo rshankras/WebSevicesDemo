@@ -12,7 +12,7 @@ private let reuseIdentifier = "Cell"
 
 class PhotosViewController: UICollectionViewController {
     
-    private var photos = []
+    fileprivate var photos = [[String: Any]]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,8 +20,8 @@ class PhotosViewController: UICollectionViewController {
         let serviceManager = ServiceManager()
         serviceManager.searchPhotos("UK") { (results) -> Void in
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                self.photos = results
+            DispatchQueue.main.async(execute: { () -> Void in
+                self.photos = results as! [[String: Any]]
                 self.collectionView?.reloadData()
             })
 
@@ -34,24 +34,14 @@ class PhotosViewController: UICollectionViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
-    }
-    */
-
     // MARK: UICollectionViewDataSource
 
-    override func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return photos.count
     }
 
-    override func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! CollectionViewCell
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! CollectionViewCell
         
 
         let photo = photos[indexPath.row]
@@ -64,7 +54,7 @@ class PhotosViewController: UICollectionViewController {
         
         let imageURLStr = "https://farm\(farm!).staticflickr.com/\(server!)/\(id!)_\(secret!)_m.jpg"
         
-        let url = NSURL(string: imageURLStr)
+        let url = URL(string: imageURLStr)
         
         url?.downloadImage({ (image) -> Void in
             cell.imageView.image = image

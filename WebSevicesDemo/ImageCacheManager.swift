@@ -10,8 +10,8 @@ import UIKit
 
 class ImageCacheManager {
 
-    static let sharedInstance: NSCache = {
-        let cache = NSCache()
+    static let sharedInstance: NSCache = { () -> NSCache<AnyObject, AnyObject> in 
+        let cache = NSCache<AnyObject, AnyObject>()
         
         cache.name = "ImageCache"
         cache.countLimit = 25
@@ -19,26 +19,26 @@ class ImageCacheManager {
         
         return cache
     }()
-    private init() {}
+    fileprivate init() {}
 }
 
-extension NSURL {
-    func downloadImage(completion:(image: UIImage) -> Void) {
+extension URL {
+    func downloadImage(_ completion:@escaping (_ image: UIImage) -> Void) {
         let cache = ImageCacheManager.sharedInstance
         
-        if let data = cache.objectForKey(self.absoluteString) {
-            let image = UIImage(data: data as! NSData)
-            completion(image: image!)
+        if let data = cache.object(forKey: self.absoluteString as AnyObject) {
+            let image = UIImage(data: data as! Data)
+            completion(image!)
         } else {
     
-            let task = NSURLSession.sharedSession().dataTaskWithURL(self, completionHandler: { (data, response, error) -> Void in
+            let task = URLSession.shared.dataTask(with: self, completionHandler: { (data, response, error) -> Void in
                 
                 if error == nil {
                     if let data = data {
-                        cache.setObject(data, forKey: self.absoluteString)
+                        cache.setObject(data as AnyObject, forKey: self.absoluteString as AnyObject)
                         let image = UIImage(data: data)
-                        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                            completion(image: image!)
+                        DispatchQueue.main.async(execute: { () -> Void in
+                            completion(image!)
                         })
                     }
                 }
