@@ -10,40 +10,64 @@ import UIKit
 
 private let reuseIdentifier = "Cell"
 
-class PhotosViewController: UICollectionViewController {
+class PhotosViewController: UIViewController,
+UICollectionViewDelegate, UICollectionViewDataSource, UISearchBarDelegate {
+    
+    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet weak var searchBar: UISearchBar!
     
     fileprivate var photos = [[String: Any]]()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        
+        searchBar.delegate = self
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        searchBar.text = "Famous Quotes"
+        searchForPhotos()
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    // MARK:- SearchButton
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchForPhotos()
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchForPhotos() {
         let serviceManager = ServiceManager()
-        serviceManager.searchPhotos("UK") { (results) -> Void in
+        serviceManager.searchPhotos(searchBar.text!) { (results) -> Void in
             
             DispatchQueue.main.async(execute: { () -> Void in
                 self.photos = results as! [[String: Any]]
                 self.collectionView?.reloadData()
             })
-
         }
-
+        
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
+    
     // MARK: UICollectionViewDataSource
-
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return photos.count
     }
-
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! CollectionViewCell
         
-
+        
         let photo = photos[indexPath.row]
         
         let farm    = photo["farm"] as? Int
@@ -59,18 +83,16 @@ class PhotosViewController: UICollectionViewController {
         url?.downloadImage({ (image) -> Void in
             cell.imageView.image = image
         })
-        
-        /*
-        
-        if let url = url {
-            let data = NSData(contentsOfURL: url)
-            if let data = data {
-                let image = UIImage(data: data)
-                cell.imageView.image = image
-            }
-        }
-*/
- 
         return cell
+    }
+}
+
+extension PhotosViewController: UICollectionViewDelegateFlowLayout {
+    // MARK:- UICollectioViewDelegateFlowLayout methods
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        // http://stackoverflow.com/questions/28872001/uicollectionview-cell-spacing-based-on-device-sceen-size
+        
+        let length = (UIScreen.main.bounds.width-15)/4
+        return CGSize(width: length, height: length)
     }
 }

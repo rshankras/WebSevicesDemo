@@ -11,7 +11,7 @@ import Foundation
 
 class ServiceManager {
     
-    let API_KEY = "YOUR_API_KEY"
+    let API_KEY = "c4a9b68616b5ef8113d021dfbec8deec"
     let URL = "https://api.flickr.com/services/rest/"
     let METHOD = "flickr.photos.search"
     let FORMAT_TYPE:String = "json"
@@ -19,16 +19,9 @@ class ServiceManager {
     let PRIVACY_FILTER:Int = 1
     let DATE_SORT = "date-taken-desc"
     
-    /*
-            Alamofire.request(.GET, URL, parameters: ["method": METHOD, "api_key": API_KEY, "tags":searchText,"sort":DATE_SORT, "privacy_filter":PRIVACY_FILTER, "format":FORMAT_TYPE, "nojsoncallback": JSON_CALLBACK]).responseJSON { (response) -> Void in
-    
-    */
-    
-
-    
     func searchPhotos(_ searchText: String, completionHandler:@escaping (NSArray) -> Void) {
 
-        let urlString: String = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(API_KEY)&tags=\(searchText)&per_page=25&format=json&nojsoncallback=1"
+        let urlString: String = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(API_KEY)&tags=\(String(describing: searchText.replacingOccurrences(of: " ", with: "%20")))&per_page=25&format=json&nojsoncallback=1"
         
         let url = Foundation.URL(string: urlString)
         
@@ -55,7 +48,6 @@ class ServiceManager {
                         } catch (let error as NSError) {
                             print(error.localizedDescription)
                         }
-                        
                     }
                 }
                 
@@ -64,10 +56,6 @@ class ServiceManager {
             task.resume()
             
         }
-        
-        // define request
-        // start session
-        // pass the data back to callerr
 
     }
 }
